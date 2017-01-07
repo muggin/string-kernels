@@ -87,3 +87,12 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# OSX
+.DS_Store
+
+# Pycharm
+.idea/
+
+# OG files
+data/orig_data/*
