@@ -1,9 +1,14 @@
 import os
+import string
 
+import nltk
+
+from nltk.corpus import stopwords
 from bs4 import BeautifulSoup
 
 
-def load_data(data_dir):
+
+def load_sgml_data(data_dir):
     """
     Load and parse training and test data from the Reuters dataset in SGML format
     Use Modified Apte dataset split
@@ -37,3 +42,16 @@ def parse_document(tag):
     text = text_tag.body.text if text_tag.body else text_tag.contents[-1]
 
     return unicode(text), topics
+
+
+def clean_document(text, blacklist):
+    """
+    Tokenize and filter out words present on blacklist. Change tokens to lowercase.
+    :param text: document to be cleaned
+    :param blacklist: word blacklist
+    :return: clean document as one string with tokens separate by whitespace
+    """
+    tokens = nltk.word_tokenize(text)
+    filtered = [token.lower() for token in tokens if token.lower() not in blacklist]
+    return ' '.join(filtered)
+
