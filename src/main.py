@@ -1,7 +1,9 @@
 from sklearn import svm
 import numpy as np
 import kernels
-
+import data_handling
+import util
+import random
 
 def _run_test(kernel, x_train, y_train, x_test, y_test):
     """
@@ -20,18 +22,21 @@ def _run_test(kernel, x_train, y_train, x_test, y_test):
     return 0., 0., 0.
 
 
-def test_performance(kernel, category, n_iter=10):
+def test_performance(kernel, category, n_iter=10, batch_size = 20):
     """
     :param kernel: kernel function for the classifier
     :param category: string
     :param n_iter: number of runs of the test
     """
 
+    # Load data and make category selection
+    trainData, testData = util.load_cleaned_data('../data/train_data.p', '../data/train_data.p')
+    x_train = [x[0] for x in trainData if (category in x[1])]
+    x_test = [x[0] for x in testData if (category in x[1])]
+    
     f1s, ps, rs = [], [], []
     for i in range(n_iter):
-        # todo: get train/test data with given category
-        x_train, y_train, x_test, y_test = None, None, None, None
-        f1, p, r = _run_test(kernel, x_train, y_train, x_test, y_test)
+        f1, p, r = _run_test(kernel, [random.choice(x_train)] * batch_size, [category] * batch_size, [random.choice(x_test)] * batch_size, [category] * batch_size)
         f1s.append(f1)
         ps.append(p)
         rs.append(r)
@@ -40,5 +45,4 @@ def test_performance(kernel, category, n_iter=10):
     print "Precision: ({}, {})".format(np.mean(ps), np.std(ps))
     print "Recall: ({}, {})".format(np.mean(rs), np.std(rs))
 
-
-test_performance(kernels.ssk(3, 0.05), 'earn')
+test_performance(kernels.ssk(3, 0.05), 'earn', 10, 20)
