@@ -1,7 +1,6 @@
 from sklearn import svm
 import numpy as np
 import kernels
-import data_handling
 import util
 import random
 
