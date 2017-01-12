@@ -19,8 +19,10 @@ def _run_test(kernel, x_train, y_train, x_test, y_test):
     gram_test = kernels.compute_Gram_matrix(kernel, x_test)
     y_pred = clf.predict(gram_test)
 
+    print(y_pred)
+
     # todo: obtain and return F1, precision and recall
-    return 0., 0., 0.
+    return util.evaluate_pred(y_test, y_pred)
 
 
 def test_performance(kernel, category, n_iter=10, batch_size=20):
