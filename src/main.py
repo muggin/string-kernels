@@ -1,8 +1,10 @@
+import kernels
+import random
+import data_handling as dh
+
 from sklearn import svm
 import numpy as np
-import kernels
-import util
-import random
+
 
 def _run_test(kernel, x_train, y_train, x_test, y_test):
     """
@@ -29,7 +31,7 @@ def test_performance(kernel, category, n_iter=10, batch_size = 20):
     """
 
     # Load data and make category selection
-    trainData, testData = util.load_cleaned_data('../data/train_data.p', '../data/train_data.p')
+    trainData, testData = dh.load_cleaned_data('../data/train_data.p', '../data/train_data.p')
     x_train = [x[0] for x in trainData if (category in x[1])]
     x_test = [x[0] for x in testData if (category in x[1])]
     

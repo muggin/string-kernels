@@ -1,4 +1,4 @@
-
+import ssk_kernel as ssk
 
 def ssk(k, l):
     """
@@ -8,21 +8,8 @@ def ssk(k, l):
     :param l: lambda
     :return: function (X, Y) -> float
     """
-    return lambda x, y: _ssk_kernel(x, y, k, l)
+    return lambda x, y: ssk.ssk_kernel(x, y, k, l)
 
-
-def _ssk_kernel(x, y, k, l):
-    """
-
-    :param x: first string
-    :param y: second string
-    :param k: length
-    :param l: lambda
-    :return: SSK distance between two strings given parameters
-    """
-
-    # todo: kernel calculation
-    return 0.
 
 
 def ngk(n):
@@ -76,3 +63,18 @@ def combine_kernels(k1, k2, w1=1., w2=1.):
     :param w2: weight of the second kernel
     """
     return lambda x, y: w1 * k1(x, y) + w2 * k2(x, y)
+
+
+if __name__ == '__main__':
+    str_a = 'science is organized knowledge' * 5
+    str_b = 'wisdom is organized life' * 5
+
+    # str_a = 'car'
+    # str_b = 'cat'
+    ssk_ab = _ssk_kernel(str_a, str_b, 3, 0.9)
+    ssk_a = _ssk_kernel(str_a, str_a, 3, 0.9)
+    ssk_b = _ssk_kernel(str_b, str_b, 3, 0.9)
+
+    print ssk_ab, ssk_a, ssk_b
+    print ssk_ab / math.sqrt(ssk_a * ssk_b)
+

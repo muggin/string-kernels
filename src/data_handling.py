@@ -1,5 +1,6 @@
 import os
 import string
+import cPickle as pickle
 
 import nltk
 
@@ -29,6 +30,16 @@ def load_sgml_data(data_dir):
     return train_data, test_data
 
 
+def load_cleaned_data(train_data_path, test_data_path):
+    with open(train_data_path) as fd:
+        train_data = pickle.load(fd)
+
+    with open(test_data_path) as fd:
+        test_data = pickle.load(fd)
+
+    return train_data, test_data
+
+
 def parse_document(tag):
     """
     Retrieve article body and topic list from tag structure.
@@ -49,6 +60,8 @@ def clean_document(text, blacklist):
     :param text: document to be cleaned
     :param blacklist: word blacklist
     :return: clean document as one string with tokens separate by whitespace
+
+    blacklist = set(nltk.corpus.stopwords.words('english') + list(string.punctuation))
     """
     tokens = nltk.word_tokenize(text)
     filtered = [token.lower() for token in tokens if token.lower() not in blacklist]
