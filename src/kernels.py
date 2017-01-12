@@ -1,4 +1,9 @@
 import numpy as np
+import random
+from collections import Counter
+from itertools import chain
+import re
+import math
 
 def compute_Gram_matrix(kernel, X):
     gram = np.empty((len(X), len(X)))
@@ -32,7 +37,7 @@ def _ssk_kernel(x, y, k, l):
     """
 
     # todo: kernel calculation
-    return 0.
+    return random.random()
 
 
 def ngk(n):
@@ -63,15 +68,37 @@ def wk(data):
     """
     Get word kernel function. (tf-idf)
 
-    :param data: list of documents
+    :param data: 2 strings
     :return: function (X, Y) -> float
     """
 
-    # todo: data preprocessing (term extraction, etc)
+    N = len(data)
+
+    # calculate words frequencies per document
+    wf = [Counter(X[0].split()) for X in data]
+
+    # calculate document frequency
+    df = Counter()
+    map(df.update, (w.keys() for w in wf))
 
     def wk_kernel(x, y):
-        # todo: kernel calculation
-        return 0
+        len_x = len(re.split(' ', x))
+        wf_x = Counter(re.split(' ', x))
+        len_y = len(re.split(' ', y))
+        wf_y = Counter(re.split(' ', y))
+
+        k = 0.0
+
+        for word, freq_x in wf_x.iteritems():
+            freq_y = [y[1] for y in wf_y.iteritems() if y[0] == word]
+            if len(freq_y) == 0:
+                continue
+
+            fx = math.log(1. + float(freq_x) / float(len_x)) * math.log(float(N) / float(df[word]))
+            fy = math.log(1. + float(freq_y[0] / float(len_y))) * math.log(float(N) / float(df[word])) 
+            k += fx * fy    
+
+        return k
 
     return wk_kernel
 
