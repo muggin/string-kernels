@@ -19,13 +19,10 @@ def _run_test(kernel, x_train, y_train, x_test, y_test):
     gram_test = kernels.compute_Gram_matrix(kernel, x_test)
     y_pred = clf.predict(gram_test)
 
-    print(y_pred)
-
-    # todo: obtain and return F1, precision and recall
     return util.evaluate_pred(y_test, y_pred)
 
 
-def test_performance(kernel, category, n_iter=10, batch_size=20):
+def test_performance(kernel, trainData, testData, category, n_iter=10, batch_size=20):
     """
     :param kernel: kernel function for the classifier
     :param category: string
@@ -33,7 +30,6 @@ def test_performance(kernel, category, n_iter=10, batch_size=20):
     """
 
     # Load data and separate samples
-    trainData, testData = util.load_cleaned_data('../data/train_data.p', '../data/train_data.p')
     x_train_positive = [x[0] for x in trainData if (category in x[1])]
     x_train_negative = [x[0] for x in trainData if (category not in x[1])]
     x_test_positive = [x[0] for x in testData if (category in x[1])]
@@ -57,4 +53,5 @@ def test_performance(kernel, category, n_iter=10, batch_size=20):
     print "Precision: ({}, {})".format(np.mean(ps), np.std(ps))
     print "Recall: ({}, {})".format(np.mean(rs), np.std(rs))
 
-test_performance(kernels.ssk(3, 0.05), 'earn', 3, 10)
+trainData, testData = util.load_cleaned_data('../data/train_data_clean.p', '../data/test_data_clean.p')
+test_performance(kernels.wk(trainData + testData), trainData, testData, 'earn', 10, 40)

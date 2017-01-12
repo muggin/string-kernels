@@ -18,7 +18,17 @@ def evaluate_pred(y, pred):
 			FP += 1
 		elif pred[i] == -1. and y[i] == 1.:
 			FN += 1
-	precision = float(TP) / float(TP + FP)
+
+	if TP + FP == 0:
+		precision = 0.0
+	else:
+		precision = float(TP) / float(TP + FP)
+	
 	recall = float(TP) / float(TP + FN)
-	F1 = 2. * precision * recall / (precision + recall)
+	
+	if precision + recall == 0:
+		F1 = 0.0
+	else:
+		F1 = 2. * precision * recall / (precision + recall)
+	
 	return F1, precision, recall
