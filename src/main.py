@@ -1,8 +1,10 @@
+import kernels
+import random
+import data_handling as dh
+import util
 from sklearn import svm
 import numpy as np
-import kernels
-import util
-import random
+
 
 def _run_test(kernel, x_train, y_train, x_test, y_test):
     """
@@ -34,7 +36,7 @@ def test_performance(kernel, trainData, testData, category, n_iter=10, batch_siz
     x_train_negative = [x[0] for x in trainData if (category not in x[1])]
     x_test_positive = [x[0] for x in testData if (category in x[1])]
     x_test_negative = [x[0] for x in testData if (category not in x[1])]
-    
+
     f1s, ps, rs = [], [], []
     for i in range(n_iter):
 
@@ -53,5 +55,5 @@ def test_performance(kernel, trainData, testData, category, n_iter=10, batch_siz
     print "Precision: ({}, {})".format(np.mean(ps), np.std(ps))
     print "Recall: ({}, {})".format(np.mean(rs), np.std(rs))
 
-trainData, testData = util.load_cleaned_data('../data/train_data_clean.p', '../data/test_data_clean.p')
+trainData, testData = dh.load_cleaned_data('../data/train_data_clean.p', '../data/test_data_clean.p')
 test_performance(kernels.wk(trainData + testData), trainData, testData, 'earn', 10, 40)

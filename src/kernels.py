@@ -1,3 +1,4 @@
+import ssk_kernel as ssk
 import numpy as np
 import random
 from collections import Counter
@@ -23,8 +24,7 @@ def ssk(k, l):
     :param l: lambda
     :return: function (X, Y) -> float
     """
-    return lambda x, y: _ssk_kernel(x, y, k, l)
-
+    return lambda x, y: ssk.ssk_kernel(x, y, k, l)
 
 def _ssk_kernel(x, y, k, l):
     """
@@ -38,7 +38,6 @@ def _ssk_kernel(x, y, k, l):
 
     # todo: kernel calculation
     return random.random()
-
 
 def ngk(n):
     """
@@ -113,3 +112,22 @@ def combine_kernels(k1, k2, w1=1., w2=1.):
     :param w2: weight of the second kernel
     """
     return lambda x, y: w1 * k1(x, y) + w2 * k2(x, y)
+
+
+def get_approximate_ssk_gram_matrix(strings, data, k, l):
+    """
+    Returns not kernel function, but already constructed Gram matrix (to make computation faster)
+    :param strings: set of substrings for approximation
+    :param data: data to build Gram matrix on
+    :param k: length for ssk
+    :param l: lambda for ssk
+    :return: Gram matrix
+    """
+    ssk_kernel = ssk(k, l)
+    n = len(data)
+    n2 = len(strings)
+    subkernels = np.empty((n, n2))
+    for i in range(n):
+        for j in range(n2):
+            subkernels[i, j] = ssk_kernel(data[i], strings[j])
+    return compute_Gram_matrix(np.dot, subkernels)
