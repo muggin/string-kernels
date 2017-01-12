@@ -1,4 +1,14 @@
+import numpy as np
 
+def compute_Gram_matrix(kernel, X):
+    gram = np.empty((len(X), len(X)))
+    for i in range(0, len(X)):
+        for j in range(0, len(X)):
+            if j < i: # using symetry
+                continue
+            gram[i, j] = kernel(X[i], X[j])
+            gram[j, i] = gram[i, j]
+    return gram
 
 def ssk(k, l):
     """
