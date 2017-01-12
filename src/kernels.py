@@ -90,7 +90,7 @@ def wk(data):
 
         for word, freq_x in wf_x.iteritems():
             freq_y = [y[1] for y in wf_y.iteritems() if y[0] == word]
-            if len(freq_y) == 0:
+            if len(freq_y) == 0 or df[word] == 0:
                 continue
 
             fx = math.log(1. + float(freq_x) / float(len_x)) * math.log(float(N) / float(df[word]))
