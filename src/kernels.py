@@ -1,4 +1,15 @@
 import ssk_kernel as ssk
+import numpy as np
+
+def compute_Gram_matrix(kernel, X):
+    gram = np.empty((len(X), len(X)))
+    for i in range(0, len(X)):
+        for j in range(0, len(X)):
+            if j < i: # using symetry
+                continue
+            gram[i, j] = kernel(X[i], X[j])
+            gram[j, i] = gram[i, j]
+    return gram
 
 def ssk(k, l):
     """
@@ -65,16 +76,20 @@ def combine_kernels(k1, k2, w1=1., w2=1.):
     return lambda x, y: w1 * k1(x, y) + w2 * k2(x, y)
 
 
-if __name__ == '__main__':
-    str_a = 'science is organized knowledge' * 5
-    str_b = 'wisdom is organized life' * 5
-
-    # str_a = 'car'
-    # str_b = 'cat'
-    ssk_ab = _ssk_kernel(str_a, str_b, 3, 0.9)
-    ssk_a = _ssk_kernel(str_a, str_a, 3, 0.9)
-    ssk_b = _ssk_kernel(str_b, str_b, 3, 0.9)
-
-    print ssk_ab, ssk_a, ssk_b
-    print ssk_ab / math.sqrt(ssk_a * ssk_b)
-
+def get_approximate_ssk_gram_matrix(strings, data, k, l):
+    """
+    Returns not kernel function, but already constructed Gram matrix (to make computation faster)
+    :param strings: set of substrings for approximation
+    :param data: data to build Gram matrix on
+    :param k: length for ssk
+    :param l: lambda for ssk
+    :return: Gram matrix
+    """
+    ssk_kernel = ssk(k, l)
+    n = len(data)
+    n2 = len(strings)
+    subkernels = np.empty((n, n2))
+    for i in range(n):
+        for j in range(n2):
+            subkernels[i, j] = ssk_kernel(data[i], strings[j])
+    return compute_Gram_matrix(np.dot, subkernels)

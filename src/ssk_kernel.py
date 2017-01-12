@@ -22,6 +22,7 @@ def ssk_kernel(s, t, k, l):
                 kernel_sum += math.pow(l, _subsequence_length(idc_s)+_subsequence_length(idc_t))
     return kernel_sum
 
+
 def _subsequence_length(indices):
     return indices[-1] - indices[0] + 1
 
@@ -39,3 +40,17 @@ def _find_all_subsequence_indices(substring, string):
 
 def _find_all_char_indices(char, string):
     return [idx for idx, ltr in enumerate(string) if ltr == char]
+
+
+if __name__ == '__main__':
+    str_a = 'science is organized knowledge' * 5
+    str_b = 'wisdom is organized life' * 5
+
+    # str_a = 'car'
+    # str_b = 'cat'
+    ssk_ab = _ssk_kernel(str_a, str_b, 3, 0.9)
+    ssk_a = _ssk_kernel(str_a, str_a, 3, 0.9)
+    ssk_b = _ssk_kernel(str_b, str_b, 3, 0.9)
+
+    print ssk_ab, ssk_a, ssk_b
+    print ssk_ab / math.sqrt(ssk_a * ssk_b)
