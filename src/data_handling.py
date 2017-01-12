@@ -1,6 +1,9 @@
 import os
 import string
 import cPickle as pickle
+import numpy as np
+
+import util
 
 import nltk
 
@@ -67,4 +70,32 @@ def clean_document(text, blacklist):
     filtered = [token.lower() for token in tokens if token.lower() not in blacklist]
     return ' '.join(filtered)
 
+
+def _gen_small_data():
+    # Hardcoded everything
+    train_data, test_data = load_cleaned_data('../data/train_data_clean.p', '../data/test_data_clean.p')
+    labels = [
+        ('earn', 152, 40),
+        ('acq', 114, 25),
+        ('crude', 76, 15),
+        ('corn', 38, 10)
+    ]
+    train_small = []
+    test_small = []
+
+    for (label, train_cnt, test_cnt) in labels:
+        train_labeled = filter(lambda x: (label in x[1]) and len({'earn', 'acq', 'crude', 'corn'} & set(x[1])) == 1, train_data)
+        train_labeled = [(x[0], [label]) for x in train_labeled]
+        train_labeled = [train_labeled[i] for i in np.random.choice(len(train_labeled), train_cnt)]
+        train_small += train_labeled
+
+        test_labeled = filter(lambda x: (label in x[1]) and len({'earn', 'acq', 'crude', 'corn'} & set(x[1])) == 1, test_data)
+        test_labeled = [(x[0], [label]) for x in test_labeled]
+        test_labeled = [test_labeled[i] for i in np.random.choice(len(test_labeled), test_cnt)]
+        test_small += test_labeled
+
+    print len(train_small), len(test_small)
+
+    pickle.dump(train_small, open('../data/train_data_small.p', 'wb'))
+    pickle.dump(test_small, open('../data/test_data_small.p', 'wb'))
 
