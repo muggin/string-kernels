@@ -1,6 +1,5 @@
 import math
 import itertools as iter
-import ssk_kernel as ssk
 import numpy as np
 
 from string import lowercase

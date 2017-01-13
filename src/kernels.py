@@ -1,3 +1,4 @@
+import ssk_kernel_c
 import ssk_kernel
 import numpy as np
 import random
@@ -24,7 +25,8 @@ def ssk(k, l):
     :param l: lambda
     :return: function (X, Y) -> float
     """
-    return lambda x, y: ssk_kernel.ssk_kernel(x, y, k, l)
+    return lambda x, y: ssk_kernel_c.ssk_kernel(x, y, k, l)
+    # return lambda x, y: ssk_kernel.ssk_kernel(x, y, k, l)
 
 def ngk(n):
     """
