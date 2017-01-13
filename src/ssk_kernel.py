@@ -45,7 +45,7 @@ def _compute_K_prime(s, t, k, l):
                     continue
 
                 K_prime[i][m][n] = l*K_prime[i][m-1][n] + \
-                       sum([K_prime[i-1][m-1][j] * l**(len(t)-j+2) for j in _find_all_char_indices(s[m-1], t)])
+                       sum([K_prime[i-1][m-1][j] * l**(n-j+1) for j in _find_all_char_indices(s[m-1], t[:n])])
 
     return K_prime
 
@@ -61,9 +61,11 @@ def _ssk_kernel(s, t, k, l, K_prime):
 def ssk_kernel(s, t, k, l, K_prime):
     K_prime = _compute_K_prime(str_a, str_b, k, l)
 
+
 if __name__ == '__main__':
     test_set = [
         ('cats', 'cats'),
+        ('dogs', 'dogs'),
         ('hats', 'cats'),
         ('wojtek', 'wojciech'),
         ('science', 'knowledge'),
@@ -74,6 +76,7 @@ if __name__ == '__main__':
     l = 0.9
     for str_a, str_b in test_set:
         print '{} ~ {}'.format(str_a, str_b)
+
         K_prime = _compute_K_prime(str_a, str_b, k, l)
         ssk_ab = _ssk_kernel(str_a, str_b, k, l, K_prime)
         K_prime = _compute_K_prime(str_a, str_a, k, l)
@@ -86,3 +89,4 @@ if __name__ == '__main__':
         ssk_a = naive_ssk_kernel(str_a, str_a, k, l)
         ssk_b = naive_ssk_kernel(str_b, str_b, k, l)
         print 'AB:', ssk_ab, 'A:', ssk_a, 'B:', ssk_b, 'NORM', ssk_ab / math.sqrt(ssk_a * ssk_b), '\n'
+
