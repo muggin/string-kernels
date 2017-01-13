@@ -1,4 +1,4 @@
-import ssk_kernel as ssk
+import ssk_kernel
 import numpy as np
 import random
 from collections import Counter
@@ -24,20 +24,7 @@ def ssk(k, l):
     :param l: lambda
     :return: function (X, Y) -> float
     """
-    return lambda x, y: ssk.ssk_kernel(x, y, k, l)
-
-def _ssk_kernel(x, y, k, l):
-    """
-
-    :param x: first string
-    :param y: second string
-    :param k: length
-    :param l: lambda
-    :return: SSK distance between two strings given parameters
-    """
-
-    # todo: kernel calculation
-    return random.random()
+    return lambda x, y: ssk_kernel.ssk_kernel(x, y, k, l)
 
 def ngk(n):
     """
@@ -131,3 +118,28 @@ def get_approximate_ssk_gram_matrix(strings, data, k, l):
         for j in range(n2):
             subkernels[i, j] = ssk_kernel(data[i], strings[j])
     return compute_Gram_matrix(np.dot, subkernels)
+
+
+if __name__ == '__main__':
+    import kernels
+    import random
+    import util
+    import numpy as np
+    import cPickle as pickle
+    import data_handling as dh
+
+    train_data, test_data = dh.load_pickled_data('../data/train_data_small.p', '../data/test_data_small.p')
+
+    x_train, _ = zip(*train_data)
+    x_test, _ = zip(*test_data)
+
+    kernel = ssk(3, 0.5)
+    print 'Working on Train'
+    gram_train = kernels.compute_Gram_matrix(kernel, x_train)
+    with open('../data/train-ssk-3-05.p', 'wb') as fd:
+        pickle.dump(gram_train, fd)
+
+    print 'Working on Test'
+    gram_test = kernels.compute_Gram_matrix(kernel, x_test)
+    with open('../data/test-ssk-3-05.p', 'wb') as fd:
+        pickle.dump(gram_test, fd)

@@ -24,7 +24,7 @@ def _run_test(kernel, x_train, y_train, x_test, y_test):
     return util.evaluate_pred(y_test, y_pred)
 
 
-def test_performance(kernel, trainData, testData, category, n_iter=10, batch_size=20):
+def toy_test_performance(kernel, trainData, testData, category, n_iter=10, batch_size=20):
     """
     :param kernel: kernel function for the classifier
     :param category: string
@@ -46,6 +46,7 @@ def test_performance(kernel, trainData, testData, category, n_iter=10, batch_siz
         x_test = [random.choice(x_test_positive)] * int(0.5 * batch_size) + [random.choice(x_test_negative)] * (batch_size - int(0.5 * batch_size))
         y_test = [1.0] * int(0.5 * batch_size) + [-1.0] * (batch_size - int(0.5 * batch_size))
 
+        print 'Test run {}'.format(i+1)
         f1, p, r = _run_test(kernel, x_train, y_train, x_test, y_test)
         f1s.append(f1)
         ps.append(p)
@@ -55,5 +56,31 @@ def test_performance(kernel, trainData, testData, category, n_iter=10, batch_siz
     print "Precision: ({}, {})".format(np.mean(ps), np.std(ps))
     print "Recall: ({}, {})".format(np.mean(rs), np.std(rs))
 
-trainData, testData = dh.load_cleaned_data('../data/train_data_clean.p', '../data/test_data_clean.p')
-test_performance(kernels.wk(trainData + testData), trainData, testData, 'earn', 10, 40)
+
+def test_performance(kernel, train_data, test_data, n_iter=10):
+    """
+    :param kernel: kernel function for the classifier
+    :param category: string
+    :param n_iter: number of runs of the test
+    """
+
+    f1s, ps, rs = [], [], []
+    for i in range(n_iter):
+
+        # Create some random batches, with both positive and negative samples
+        x_train, y_train = zip(*train_data)
+        x_test, y_test = zip(*test_data)
+
+        print 'Test run {}'.format(i+1)
+        f1, p, r = _run_test(kernel, x_train, y_train, x_test, y_test)
+        f1s.append(f1)
+        ps.append(p)
+        rs.append(r)
+
+    print "F1 score: ({}, {})".format(np.mean(f1s), np.std(f1s))
+    print "Precision: ({}, {})".format(np.mean(ps), np.std(ps))
+    print "Recall: ({}, {})".format(np.mean(rs), np.std(rs))
+
+trainData, testData = dh.load_pickled_data('../data/train_data_small.p', '../data/test_data_small.p')
+test_performance(kernels.wk(trainData + testData), trainData, testData, 10)
+test_performance(kernels.ssk(3, 0.9), trainData, testData, 1)

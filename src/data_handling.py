@@ -33,7 +33,7 @@ def load_sgml_data(data_dir):
     return train_data, test_data
 
 
-def load_cleaned_data(train_data_path, test_data_path):
+def load_pickled_data(train_data_path, test_data_path):
     with open(train_data_path) as fd:
         train_data = pickle.load(fd)
 
@@ -73,7 +73,7 @@ def clean_document(text, blacklist):
 
 def _gen_small_data():
     # Hardcoded everything
-    train_data, test_data = load_cleaned_data('../data/train_data_clean.p', '../data/test_data_clean.p')
+    train_data, test_data = load_pickled_data('../data/train_data_clean.p', '../data/test_data_clean.p')
     labels = [
         ('earn', 152, 40),
         ('acq', 114, 25),

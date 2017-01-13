@@ -7,6 +7,14 @@ from string import lowercase
 
 
 def naive_ssk_kernel(s, t, k, l):
+    """
+    Naive (direct) SSK implementation. Very unefficient, use only for short strings.
+    :param s: document #1
+    :param t: document #2
+    :param k: subsequence length
+    :param l: weight decay (lambda)
+    :return: similarity of given documents
+    """
     kernel_sum = 0
     for subseq in iter.permutations(lowercase + ' ', k):
         for idc_s in _find_all_subsequence_indices(subseq, s):
@@ -15,8 +23,65 @@ def naive_ssk_kernel(s, t, k, l):
     return kernel_sum
 
 
-def _subsequence_length(indices):
-    return indices[-1] - indices[0] + 1
+def ssk_kernel(s, t, k, l):
+    """
+    Recursive SSK implementation.
+    :param s: document #1
+    :param t: document #2
+    :param k: subsequence length
+    :param l: weight decay (lambda)
+    :return: similarity of given documents
+    return:
+    """
+    K_prime = _compute_K_prime(s, t, k, l)
+    K_st = _compute_K(s, t, k, l, K_prime)
+
+    K_prime = _compute_K_prime(s, s, k, l)
+    K_ss = _compute_K(s, s, k, l, K_prime)
+
+    K_prime = _compute_K_prime(t, t, k, l)
+    K_tt = _compute_K(t, t, k, l, K_prime)
+
+    return K_st / math.sqrt(K_ss * K_tt)
+
+
+def _compute_K(s, t, k, l, K_prime):
+    """
+    Compute and return the K in a recursive manner using precomputed K'
+    """
+    K_val = 0
+
+    for m in xrange(len(s)+1):
+        if min(len(s[:m]), len(t)) < k:
+            continue
+
+        K_val += l**2 * sum([K_prime[k-1][len(s[:m])-1][j] for j in _find_all_char_indices(s[m-1], t)])
+
+    return K_val
+
+
+def _compute_K_prime(s, t, k, l):
+    """
+    Compute and return K' using the efficient DP algorithm (K'')
+    """
+    K_prime = np.ones((k, len(s)+1, len(t)+1))
+    K_dprime = np.zeros((k, len(s)+1, len(t)+1))
+
+    for i in xrange(1, k):
+        for m in xrange(len(s)+1):
+            for n in xrange(len(t)+1):
+                if min(m, n) < i:
+                    K_prime[i][m][n] = 0
+                    continue
+
+                if s[m-1] != t[n-1]:
+                    K_dprime[i][m][n] = l*K_dprime[i][m][n-1]
+                else:
+                    K_dprime[i][m][n] = l*(K_dprime[i][m][n-1] + l*K_prime[i-1][m-1][n-1])
+
+                K_prime[i][m][n] = l*K_prime[i][m-1][n] + K_dprime[i][m][n]
+
+    return K_prime
 
 
 def _find_all_subsequence_indices(substring, string):
@@ -34,59 +99,5 @@ def _find_all_char_indices(char, string):
     return [idx for idx, ltr in enumerate(string) if ltr == char]
 
 
-def _compute_K_prime(s, t, k, l):
-    K_prime = np.ones((k, len(s)+1, len(t)+1))
-
-    for i in xrange(1, k):
-        for m in xrange(len(s)+1):
-            for n in xrange(len(t)+1):
-                if min(m, n) < i:
-                    K_prime[i][m][n] = 0
-                    continue
-
-                K_prime[i][m][n] = l*K_prime[i][m-1][n] + \
-                       sum([K_prime[i-1][m-1][j] * l**(n-j+1) for j in _find_all_char_indices(s[m-1], t[:n])])
-
-    return K_prime
-
-
-def _ssk_kernel(s, t, k, l, K_prime):
-    if min(len(s), len(t)) < k:
-        return 0
-
-    return _ssk_kernel(s[:-1], t, k, l, K_prime) + \
-           l**2 * sum([K_prime[k-1][len(s)-1][j] for j in _find_all_char_indices(s[-1], t)])
-
-
-def ssk_kernel(s, t, k, l, K_prime):
-    K_prime = _compute_K_prime(str_a, str_b, k, l)
-
-
-if __name__ == '__main__':
-    test_set = [
-        ('cats', 'cats'),
-        ('dogs', 'dogs'),
-        ('hats', 'cats'),
-        ('wojtek', 'wojciech'),
-        ('science', 'knowledge'),
-        ('science is organized knowledge', 'wisdom is organized life')
-    ]
-
-    k = 3
-    l = 0.9
-    for str_a, str_b in test_set:
-        print '{} ~ {}'.format(str_a, str_b)
-
-        K_prime = _compute_K_prime(str_a, str_b, k, l)
-        ssk_ab = _ssk_kernel(str_a, str_b, k, l, K_prime)
-        K_prime = _compute_K_prime(str_a, str_a, k, l)
-        ssk_a = _ssk_kernel(str_a, str_a, k, l, K_prime)
-        K_prime = _compute_K_prime(str_b, str_b, k, l)
-        ssk_b = _ssk_kernel(str_b, str_b, k, l, K_prime)
-        print 'AB:', ssk_ab, 'A:', ssk_a, 'B:', ssk_b, 'NORM', ssk_ab / math.sqrt(ssk_a * ssk_b)
-
-        ssk_ab = naive_ssk_kernel(str_a, str_b, k, l)
-        ssk_a = naive_ssk_kernel(str_a, str_a, k, l)
-        ssk_b = naive_ssk_kernel(str_b, str_b, k, l)
-        print 'AB:', ssk_ab, 'A:', ssk_a, 'B:', ssk_b, 'NORM', ssk_ab / math.sqrt(ssk_a * ssk_b), '\n'
-
+def _subsequence_length(indices):
+    return indices[-1] - indices[0] + 1
