@@ -14,7 +14,6 @@ from joblib import Parallel, delayed
 import multiprocessing
 
 
-
 def compute_Gram_matrix(kernel, X, Y=None):
     symm = False
     if Y is None:
@@ -63,28 +62,62 @@ def parallel_similarity(args):
     return i, j, ssk_kernel_c.ssk_kernel(s, t, 3, 0.5)
 
 
-def compute_Gram_matrix_par(kernel, X, Y):
+def compute_Gram_matrix_par(kernel, X, Y=None):
     symm = False
     if Y is None:
         Y = X
         symm = True
 
-    gram = np.empty((len(X), len(X)))
+    gram = np.empty((len(X), len(Y)))
 
     if symm:
-        data = [(X[i], X[j], i, j) for i in xrange(len(X)) for j in xrange(len(X)) if i <= j]
+        data = [(X[i], Y[j], i, j) for i in xrange(len(X)) for j in xrange(len(Y)) if i <= j]
     else:
-        data = [(X[i], X[j], i, j) for i in xrange(len(X)) for j in xrange(len(X))]
+        data = [(X[i], Y[j], i, j) for i in xrange(len(X)) for j in xrange(len(Y))]
 
-    workers = mp.Pool(processes=64)
+    workers = mp.Pool(processes=32)
     results = workers.map(parallel_similarity, data)
 
     for i, j, result in results:
         gram[i, j] = result
         if symm:
-            gram[j, i] = results
+            gram[j, i] = result
 
     return gram
+
+
+def parallel_multi_similarity(args):
+    s, t, i, j = args
+
+    if i == j:
+        print 'Processing {} x {}'.format(i, j)
+
+    return i, j, ssk_kernel_c.ssk_kernel_many(s, t, range(3, 15), 0.5)
+
+
+def compute_multi_Gram_matrix_par(X, Y=None):
+    symm = False
+    if Y is None:
+        Y = X
+        symm = True
+
+    gram = np.empty((len(X), len(Y), len(range(3, 15))))
+
+    if symm:
+        data = [(X[i], Y[j], i, j) for i in xrange(len(X)) for j in xrange(len(Y)) if i <= j]
+    else:
+        data = [(X[i], Y[j], i, j) for i in xrange(len(X)) for j in xrange(len(Y))]
+
+    workers = mp.Pool(processes=4)
+    results = workers.map(parallel_multi_similarity, data)
+
+    for i, j, result in results:
+        gram[i, j] = result
+        if symm:
+            gram[j, i] = result
+
+    return gram
+
 
 
 def ssk(k, l):
@@ -198,21 +231,22 @@ if __name__ == '__main__':
     import data_handling as dh
 
     train_data, test_data = dh.load_pickled_data('../data/train_data_small.p', '../data/test_data_small.p')
+    train_data = train_data[:4]
 
     x_train, _ = zip(*train_data)
     x_test, _ = zip(*test_data)
 
-    k = 5
-    l = 0.01
-    kernel = ssk(k, l)
+    ks = range(3, 15)
+    l = 0.5
     print 'Working on Train'
-    gram_train = kernels.compute_Gram_matrix_par(kernel, x_train)
-    # gram_train = kernels.compute_ssk_Gram_matrix(k, l, x_train)
-    with open('../data/train-ssk-5-001.p', 'wb') as fd:
+    gram_train = kernels.compute_multi_Gram_matrix_par(x_train)
+    # gram_train = kernels.compute_multissk_Gram_matrix(ks, l, x_train)
+    with open('../data/train-ssk-n-05.p', 'wb') as fd:
         pickle.dump(gram_train, fd)
 
     print 'Working on Test'
-    # gram_test = kernels.compute_Gram_matrix_par(kernel, x_test)
-    gram_test = kernels.compute_ssk_Gram_matrix_par(k, l, x_train, x_test)
-    with open('../data/test-ssk-3-001.p', 'wb') as fd:
+    gram_test = kernels.compute_multi_Gram_matrix_par(x_train, x_test)
+    # gram_test = kernels.compute_multissk_Gram_matrix(ks, l, x_train, x_test)
+    with open('../data/test-ssk-n-05.p', 'wb') as fd:
         pickle.dump(gram_test, fd)
+

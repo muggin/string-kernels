@@ -20,6 +20,10 @@ def ssk_kernel(s, t, int k, float l):
     :return: similarity of given documents
     return:
     """
+    if s == t:
+        return 1.
+    elif min(len(s), len(t)) < k:
+        return 0.
     cdef np.ndarray[DTYPE_t, ndim=3] K_prime = _compute_K_prime(s, t, k, l)
     cdef float K_st = _compute_K(s, t, k, l, K_prime)
 
@@ -29,7 +33,38 @@ def ssk_kernel(s, t, int k, float l):
     K_prime = _compute_K_prime(t, t, k, l)
     cdef float K_tt = _compute_K(t, t, k, l, K_prime)
 
-    return K_st / (1e-7 + math.sqrt(K_ss * K_tt))
+    cdef float denominator = math.sqrt(K_ss * K_tt) if K_ss * K_tt else 10e-30
+    return K_st / denominator
+
+def ssk_kernel_many(s, t, ks, float l):
+    """
+    Recursive SSK implementation.
+    :param s: document #1
+    :param t: document #2
+    :param k: subsequence length
+    :param l: weight decay (lambda)
+    :return: similarity of given documents
+    return:
+    """
+    cdef np.ndarray[DTYPE_t, ndim=3] K_prime_st = _compute_K_prime(s, t, ks[-1], l)
+    cdef np.ndarray[DTYPE_t, ndim=3] K_prime_ss = _compute_K_prime(s, s, ks[-1], l)
+    cdef np.ndarray[DTYPE_t, ndim=3] K_prime_tt = _compute_K_prime(t, t, ks[-1], l)
+
+    cdef int k
+    result = []
+    for k in ks:
+        if s == t:
+            result.append(1.)
+        elif min(len(s), len(t)) < k:
+            result.append(0.)
+        else:
+            K_st = _compute_K(s, t, k, l, K_prime_st)
+            K_ss = _compute_K(s, s, k, l, K_prime_ss)
+            K_tt = _compute_K(t, t, k, l, K_prime_tt)
+
+            denominator = math.sqrt(K_ss * K_tt) if K_ss * K_tt else 10e-30
+            result.append(K_st / denominator)
+    return np.array(result)
 
 
 def _compute_K(s, t, int k, float l, np.ndarray[DTYPE_t, ndim=3] K_prime):

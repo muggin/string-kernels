@@ -65,8 +65,8 @@ def _save_subkernels():
     strings = extract_strings(trainDocs, 3)
     print len(strings), 'substrings total'
 
-    subkernels = calc_subkernels(trainDocs, strings, 3, 0.9)
-    with open('../data/approx/subkernels.p', 'wb') as fd:
+    subkernels = calc_subkernels(trainDocs, strings, 3, 0.5)
+    with open('../data/approx/_subkernels.p', 'wb') as fd:
         pickle.dump(subkernels, fd)
 
 
@@ -81,9 +81,9 @@ def compare_subsets():
     strings_shuffled = np.random.choice(strings, len(strings))
     print len(strings), 'substrings total'
 
-    trueGram = kernels.compute_Gram_matrix(kernels.ssk(3, 0.9), trainDocs)
+    trueGram = kernels.compute_ssk_Gram_matrix(3, 0.5, trainDocs)
     print 'True Gram matrix was built'
-    with open('../data/approx/true_ssk.p', 'wb') as fd:
+    with open('../data/approx/true_ssk_3_05.p', 'wb') as fd:
         pickle.dump(trueGram, fd)
 
     sizes = range(100, len(strings), 100)
@@ -117,9 +117,6 @@ def compare_subsets():
     plt.legend(['Most frequent', 'Least frequent', 'Random'])
     fig.show()
 
-_save_subkernels()
+# _save_subkernels()
+compare_subsets()
 
-# def processInput(i):
-    # return i * i
-# results = Parallel(n_jobs=4)(delayed(processInput)(i) for i in inputs)
-# print results
