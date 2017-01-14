@@ -41,7 +41,8 @@ def ssk_kernel(s, t, k, l):
     K_prime = _compute_K_prime(t, t, k, l)
     K_tt = _compute_K(t, t, k, l, K_prime)
 
-    return K_st / math.sqrt(K_ss * K_tt)
+    denominator = math.sqrt(K_ss * K_tt) if K_ss * K_tt else 10e-20
+    return K_st / denominator
 
 
 def _compute_K(s, t, k, l, K_prime):

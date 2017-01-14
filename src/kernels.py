@@ -1,11 +1,13 @@
 import ssk_kernel_c
-import ssk_kernel
-import numpy as np
-import random
-from collections import Counter
-from itertools import chain
 import re
 import math
+import random
+import multiprocessing as mp
+
+import numpy as np
+
+from collections import Counter
+from itertools import chain
 
 
 def compute_Gram_matrix(kernel, X, Y=None):
@@ -22,6 +24,28 @@ def compute_Gram_matrix(kernel, X, Y=None):
             gram[j, i] = gram[i, j]
             print '\rcur: ', i, j,
     print '\r',
+    return gram
+
+
+def parallel_similarity(args):
+    s, t, i, j = args
+
+    if i == j:
+        print 'Processing {} x {}'.format(i, j)
+
+    return i, j, ssk_kernel_c.ssk_kernel(s, t, 3, 0.5)
+
+
+def compute_Gram_matrix_par(kernel, X):
+    gram = np.empty((len(X), len(X)))
+    data = [(X[i], X[j], i, j) for i in xrange(len(X)) for j in xrange(len(X)) if i <= j]
+
+    workers = mp.Pool(processes=25)
+    results = workers.map(parallel_similarity, data)
+
+    for i, j, result in results:
+        gram[i, j] = gram[j, i] = result
+
     return gram
 
 
@@ -145,11 +169,12 @@ if __name__ == '__main__':
 
     kernel = ssk(3, 0.5)
     print 'Working on Train'
-    gram_train = kernels.compute_Gram_matrix(kernel, x_train)
+    gram_train = kernels.compute_Gram_matrix_par(kernel, x_train)
+
     with open('../data/train-ssk-3-05.p', 'wb') as fd:
         pickle.dump(gram_train, fd)
 
     print 'Working on Test'
-    gram_test = kernels.compute_Gram_matrix(kernel, x_train, x_test)
+    gram_test = kernels.compute_Gram_matrix_par(kernel, x_test)
     with open('../data/test-ssk-3-05.p', 'wb') as fd:
         pickle.dump(gram_test, fd)
