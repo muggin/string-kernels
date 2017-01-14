@@ -59,7 +59,7 @@ def parallel_similarity(args):
     if i == j:
         print 'Processing {} x {}'.format(i, j)
 
-    return i, j, ssk_kernel_c.ssk_kernel(s, t, 3, 0.5)
+    return i, j, ssk_kernel_c.ssk_kernel(s, t, 5, 0.01)
 
 
 def compute_Gram_matrix_par(kernel, X, Y=None):
@@ -84,7 +84,6 @@ def compute_Gram_matrix_par(kernel, X, Y=None):
             gram[j, i] = result
 
     return gram
-
 
 def parallel_multi_similarity(args):
     s, t, i, j = args
@@ -117,7 +116,6 @@ def compute_multi_Gram_matrix_par(X, Y=None):
             gram[j, i] = result
 
     return gram
-
 
 
 def ssk(k, l):
