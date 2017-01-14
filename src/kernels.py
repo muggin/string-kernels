@@ -7,15 +7,23 @@ from itertools import chain
 import re
 import math
 
-def compute_Gram_matrix(kernel, X):
-    gram = np.empty((len(X), len(X)))
+
+def compute_Gram_matrix(kernel, X, Y=None):
+    symm = True
+    if Y is None:
+        Y = X
+        symm = False
+    gram = np.empty((len(X), len(Y)))
     for i in range(0, len(X)):
-        for j in range(0, len(X)):
-            if j < i: # using symetry
+        for j in range(0, len(Y)):
+            if symm and j < i:  # using symetry
                 continue
-            gram[i, j] = kernel(X[i], X[j])
+            gram[i, j] = kernel(X[i], Y[j])
             gram[j, i] = gram[i, j]
+            print '\rcur: ', i, j,
+    print '\r',
     return gram
+
 
 def ssk(k, l):
     """
@@ -142,6 +150,6 @@ if __name__ == '__main__':
         pickle.dump(gram_train, fd)
 
     print 'Working on Test'
-    gram_test = kernels.compute_Gram_matrix(kernel, x_test)
+    gram_test = kernels.compute_Gram_matrix(kernel, x_train, x_test)
     with open('../data/test-ssk-3-05.p', 'wb') as fd:
         pickle.dump(gram_test, fd)
