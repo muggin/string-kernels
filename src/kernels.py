@@ -9,20 +9,46 @@ import numpy as np
 from collections import Counter
 from itertools import chain
 
+from joblib import Parallel, delayed
+import multiprocessing
+
+
 
 def compute_Gram_matrix(kernel, X, Y=None):
-    symm = True
+    symm = False
     if Y is None:
         Y = X
-        symm = False
+        symm = True
     gram = np.empty((len(X), len(Y)))
     for i in range(0, len(X)):
+        print '\rcur: ', i,
         for j in range(0, len(Y)):
             if symm and j < i:  # using symetry
                 continue
             gram[i, j] = kernel(X[i], Y[j])
             gram[j, i] = gram[i, j]
-            print '\rcur: ', i, j,
+    print '\r',
+    return gram
+
+
+def _ssk_picklable(s, t, k, l):
+    return ssk_kernel_c.ssk_kernel(s, t, k, l)
+
+
+def compute_ssk_Gram_matrix(k, l, X, Y=None):
+    symm = False
+    if Y is None:
+        Y = X
+        symm = True
+    gram = np.empty((len(X), len(Y)))
+    for i in range(0, len(X)):
+        print '\rcur i: ', i, '/', len(X)
+        x = X[i]
+        if symm:
+            gram[i, i:] = Parallel(n_jobs=4)(delayed(_ssk_picklable)(x, y, k, l) for y in Y[i:])
+            gram[i:, i] = gram[i, i:]
+        else:
+            gram[i, :] = Parallel(n_jobs=4)(delayed(_ssk_picklable)(x, y, k, l) for y in Y)
     print '\r',
     return gram
 
@@ -36,15 +62,26 @@ def parallel_similarity(args):
     return i, j, ssk_kernel_c.ssk_kernel(s, t, 3, 0.5)
 
 
-def compute_Gram_matrix_par(kernel, X):
-    gram = np.empty((len(X), len(X)))
-    data = [(X[i], X[j], i, j) for i in xrange(len(X)) for j in xrange(len(X)) if i <= j]
+def compute_Gram_matrix_par(kernel, X, Y):
+    symm = False
+    if Y is None:
+        Y = X
+        symm = True
 
-    workers = mp.Pool(processes=25)
+    gram = np.empty((len(X), len(X)))
+
+    if symm:
+        data = [(X[i], X[j], i, j) for i in xrange(len(X)) for j in xrange(len(X)) if i <= j]
+    else:
+        data = [(X[i], X[j], i, j) for i in xrange(len(X)) for j in xrange(len(X))]
+
+    workers = mp.Pool(processes=64)
     results = workers.map(parallel_similarity, data)
 
     for i, j, result in results:
-        gram[i, j] = gram[j, i] = result
+        gram[i, j] = result
+        if symm:
+            gram[j, i] = results
 
     return gram
 
@@ -156,8 +193,6 @@ def get_approximate_ssk_gram_matrix(strings, data, k, l):
 
 if __name__ == '__main__':
     import kernels
-    import random
-    import util
     import numpy as np
     import cPickle as pickle
     import data_handling as dh
@@ -167,14 +202,17 @@ if __name__ == '__main__':
     x_train, _ = zip(*train_data)
     x_test, _ = zip(*test_data)
 
-    kernel = ssk(3, 0.5)
+    k = 5
+    l = 0.01
+    kernel = ssk(k, l)
     print 'Working on Train'
     gram_train = kernels.compute_Gram_matrix_par(kernel, x_train)
-
-    with open('../data/train-ssk-3-05.p', 'wb') as fd:
+    # gram_train = kernels.compute_ssk_Gram_matrix(k, l, x_train)
+    with open('../data/train-ssk-5-001.p', 'wb') as fd:
         pickle.dump(gram_train, fd)
 
     print 'Working on Test'
-    gram_test = kernels.compute_Gram_matrix_par(kernel, x_test)
-    with open('../data/test-ssk-3-05.p', 'wb') as fd:
+    # gram_test = kernels.compute_Gram_matrix_par(kernel, x_test)
+    gram_test = kernels.compute_ssk_Gram_matrix_par(k, l, x_train, x_test)
+    with open('../data/test-ssk-3-001.p', 'wb') as fd:
         pickle.dump(gram_test, fd)
