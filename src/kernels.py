@@ -7,20 +7,46 @@ from itertools import chain
 import re
 import math
 
+from joblib import Parallel, delayed
+import multiprocessing
+
+
 
 def compute_Gram_matrix(kernel, X, Y=None):
-    symm = True
+    symm = False
     if Y is None:
         Y = X
-        symm = False
+        symm = True
     gram = np.empty((len(X), len(Y)))
     for i in range(0, len(X)):
+        print '\rcur: ', i,
         for j in range(0, len(Y)):
             if symm and j < i:  # using symetry
                 continue
             gram[i, j] = kernel(X[i], Y[j])
             gram[j, i] = gram[i, j]
-            print '\rcur: ', i, j,
+    print '\r',
+    return gram
+
+
+def _ssk_picklable(s, t, k, l):
+    return ssk_kernel_c.ssk_kernel(s, t, k, l)
+
+
+def compute_ssk_Gram_matrix(k, l, X, Y=None):
+    symm = False
+    if Y is None:
+        Y = X
+        symm = True
+    gram = np.empty((len(X), len(Y)))
+    for i in range(0, len(X)):
+        print '\rcur i: ', i, '/', len(X)
+        x = X[i]
+        if symm:
+            gram[i, i:] = Parallel(n_jobs=4)(delayed(_ssk_picklable)(x, y, k, l) for y in Y[i:])
+            gram[i:, i] = gram[i, i:]
+        else:
+            gram[i, :] = Parallel(n_jobs=4)(delayed(_ssk_picklable)(x, y, k, l) for y in Y)
     print '\r',
     return gram
 
@@ -143,13 +169,15 @@ if __name__ == '__main__':
     x_train, _ = zip(*train_data)
     x_test, _ = zip(*test_data)
 
+    k = 3
+    l = 0.5
     kernel = ssk(3, 0.5)
     print 'Working on Train'
-    gram_train = kernels.compute_Gram_matrix(kernel, x_train)
+    gram_train = kernels.compute_ssk_Gram_matrix(k, l, x_train)
     with open('../data/train-ssk-3-05.p', 'wb') as fd:
         pickle.dump(gram_train, fd)
 
     print 'Working on Test'
-    gram_test = kernels.compute_Gram_matrix(kernel, x_train, x_test)
+    gram_test = kernels.compute_ssk_Gram_matrix(k, l, x_train, x_test)
     with open('../data/test-ssk-3-05.p', 'wb') as fd:
         pickle.dump(gram_test, fd)
