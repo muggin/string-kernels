@@ -7,6 +7,9 @@ def ngk(doc1, doc2, n):
     sd1 = create_ngrams(doc1, n)
     sd2 = create_ngrams(doc2, n)
 
+    if len(sd1 | sd2) == 0:
+        return 1.0
+
     return len(sd1 & sd2) * 1.0 / len(sd1 | sd2)
 
 
