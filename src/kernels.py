@@ -2,6 +2,7 @@ import ssk_kernel_c
 import re
 import math
 import random
+import ngk_kernel
 import multiprocessing as mp
 
 import numpy as np
@@ -117,8 +118,7 @@ def _ngk_kernel(x, y, n):
     :return: n-gram distance between two strings
     """
 
-    # todo: kernel calculation
-    return 0.
+    return ngk_kernel.ngk(x, y, n)
 
 
 def wk(data):
