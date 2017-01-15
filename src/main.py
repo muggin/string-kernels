@@ -154,24 +154,24 @@ def test_performance_gram(label, train_data, test_data, gram_train, gram_test, n
     print "F1 score: ({}, {})".format(np.mean(f1s), np.std(f1s))
     print "Precision: ({}, {})".format(np.mean(ps), np.std(ps))
     print "Recall: ({}, {})".format(np.mean(rs), np.std(rs))
+    print '{:.3f} & {:.3f} & {:.3f}'.format(np.mean(f1s), np.mean(ps), np.mean(rs))
 
 # trainData, testData = dh.load_pickled_data('../data/train_data_small.p', '../data/test_data_small.p')
 # test_performance(kernels.wk(trainData + testData), trainData, testData, 10)
 # test_performance(kernels.ssk(3, 0.9), trainData, testData, 1)
 
-
-with open('../data/train-ssk-5-001.p') as fd:
+k = 3
+l = '05'
+category = 'earn'
+with open('../data/precomp_kernels/train-ssk-{}-{}.p'.format(k, l)) as fd:
     train_gram = pickle.load(fd)
-with open('../data/train-ssk-5-003.p') as fd:
+with open('../data/precomp_kernels/test-ssk-{}-{}.p'.format(k, l)) as fd:
     test_gram = pickle.load(fd)
 with open('../data/train_data_small.p') as fd:
     train_data = pickle.load(fd)
 with open('../data/test_data_small.p') as fd:
     test_data = pickle.load(fd)
 
+test_performance_gram(category, train_data, test_data, train_gram, test_gram)
 
-# test_performance_gram('corn', train_data, test_data, train_gram, test_gram)
-for cat in ['earn', 'acq', 'corn', 'crude']:
-    print cat
-    test_performance_gram(cat, train_data, test_data, train_gram, test_gram)
 
