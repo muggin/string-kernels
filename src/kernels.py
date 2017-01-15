@@ -163,34 +163,31 @@ def wk(data):
 
     N = len(data)
 
-    # calculate words frequencies per document
-    wf = [Counter(X[0].split()) for X in data]
-
-    # calculate document frequency
+    wf = [Counter(re.split(' ', x[0])) for x in data]
     df = Counter()
     map(df.update, (w.keys() for w in wf))
+    docFreq = dict(df.iteritems())
 
     def wk_kernel(x, y):
-        len_x = len(re.split(' ', x))
         wf_x = Counter(re.split(' ', x))
-        len_y = len(re.split(' ', y))
         wf_y = Counter(re.split(' ', y))
 
         k = 0.0
 
         for word, freq_x in wf_x.iteritems():
             freq_y = [y[1] for y in wf_y.iteritems() if y[0] == word]
-            if len(freq_y) == 0 or df[word] == 0:
+
+            if len(freq_y) == 0:
                 continue
 
-            fx = math.log(1. + float(freq_x) / float(len_x)) * math.log(float(N) / float(df[word]))
-            fy = math.log(1. + float(freq_y[0] / float(len_y))) * math.log(float(N) / float(df[word])) 
-            k += fx * fy    
+            docFrequency = 1
+            if word in docFreq:
+                docFrequency = docFreq[word]
 
+            k += math.log(1. + float(freq_x)) * math.log(1. + float(freq_y[0])) * math.log(float(N) / float(docFrequency)) 
         return k
 
     return wk_kernel
-
 
 def combine_kernels(k1, k2, w1=1., w2=1.):
     """
