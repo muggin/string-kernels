@@ -16,15 +16,28 @@ def _run_test(kernel, x_train, y_train, x_test, y_test):
     clf = svm.SVC(kernel='precomputed')
 
     print 'Training the classifier... '
+    category = "earn"
+    y_train_bin = []
+    for y in y_train:
+        if y[0] == category:
+            y_train_bin.append(1.0)
+        else:
+            y_train_bin.append(0.0)
+    y_test_bin = []
+    for y in y_test:
+        if y[0] == category:
+            y_test_bin.append(1.0)
+        else:
+            y_test_bin.append(0.0)
+
     gram_train = kernels.compute_Gram_matrix(kernel, x_train)
-    clf.fit(gram_train, y_train)
+    clf.fit(gram_train, y_train_bin)
 
     print 'Testing the classifier... '
-    gram_test = kernels.compute_Gram_matrix(kernel, x_train, x_test)
+    gram_test = kernels.compute_Gram_matrix(kernel, x_test, x_train)
     y_pred = clf.predict(gram_test)
 
-    return util.evaluate_pred(y_test, y_pred)
-
+    return util.evaluate_pred(y_test_bin, y_pred)
 
 def _run_test_gram(gram_train, y_train, gram_test, y_test, category):
     """
