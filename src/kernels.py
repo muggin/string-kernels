@@ -26,7 +26,8 @@ def compute_Gram_matrix(kernel, X, Y=None):
             if symm and j < i:  # using symetry
                 continue
             gram[i, j] = kernel(X[i], Y[j])
-            gram[j, i] = gram[i, j]
+            if symm:
+                gram[j, i] = gram[i, j]
     print '\r',
     return gram
 
