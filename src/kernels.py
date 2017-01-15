@@ -230,7 +230,6 @@ if __name__ == '__main__':
     import data_handling as dh
 
     train_data, test_data = dh.load_pickled_data('../data/train_data_small.p', '../data/test_data_small.p')
-    train_data = train_data[:4]
 
     x_train, _ = zip(*train_data)
     x_test, _ = zip(*test_data)
