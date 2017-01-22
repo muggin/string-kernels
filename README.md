@@ -2,14 +2,17 @@
 Implementation of the "Text Classification using String Kernels" paper written by Lodhi, Saunders, Shawe-Taylor, Cristianini, Watkins.
 
 ### Data
-The ```data``` directory has two data files ```train_data``` and ```test_data```.
+Files in the ```data``` directory:
 
-These files are in the Pickle format and hold the dataset split as suggested in the paper (Modified Apte spit).
+* ```train_data``` and ```test_data``` - original Reuters dataset split (Modified Apte) and (Pickled)
+* ```train_data_clean``` and ```test_data_clean``` - preprocessed and cleaned dataset (Pickled)
+* ```train_data_small``` and ```test_data_small``` - trimmed dataset prepared for experiments (Pickled)
+* ```precomp_kernels ``` - directory with precomputed SSK gram matrices
+* ```approx``` - directory with precomputed approximated-SSK files
 
 ### Setup
 
-To compile SSK, run
-
+Before using SSK kernel compile Cython code using:
 ```
 python setup.py build_ext --inplace
 ```
