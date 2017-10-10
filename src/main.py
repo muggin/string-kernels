@@ -160,9 +160,9 @@ def test_performance_gram(label, train_data, test_data, gram_train, gram_test, n
 # test_performance(kernels.wk(trainData + testData), trainData, testData, 10)
 # test_performance(kernels.ssk(3, 0.9), trainData, testData, 1)
 
-k = 3
+k = 14
 l = '05'
-category = 'earn'
+category = 'corn'
 with open('../data/precomp_kernels/train-ssk-{}-{}.p'.format(k, l)) as fd:
     train_gram = pickle.load(fd)
 with open('../data/precomp_kernels/test-ssk-{}-{}.p'.format(k, l)) as fd:
