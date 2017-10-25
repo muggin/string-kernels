@@ -7,7 +7,7 @@ This project was carried out as part of the DD2434 "Advanced Machine Learning" c
 - F. Franzen (github: [flammi](https://github.com/flammi))
 - B. Godefroy (github: [BGodefroyFR](https://github.com/BGodefroyFR))
 - W. Kryściński (github: [muggin](https://github.com/muggin/))
-- V. Polianskii (github: [vlpolyansky](https://github.com/vlpolyansky))
+- V. Polianskii (github: [vlpolyansky](https://github.com/vlpolyansky)) 
 
 
 ### Data
